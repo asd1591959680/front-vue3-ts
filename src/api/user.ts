@@ -22,3 +22,11 @@ export const ProductCategoryApi = (params: IUseTableParam): dataAPI<any> =>
 // get请求，有参数，
 export const AdminListAPI = (params: IAdminListParam): dataAPI<AdminListDate> =>
   instance.get("/admin/list", { params });
+
+export function login(data) {
+  return instance({
+    url: "/sys/login",
+    method: "post",
+    data,
+  });
+}
