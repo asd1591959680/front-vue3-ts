@@ -6,6 +6,8 @@ import Components from "unplugin-vue-components/vite";
 import type { UserConfig, ConfigEnv } from "vite";
 import { loadEnv } from "vite";
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
+//引入核心ts文件
+import { createSvg } from "./src/components/SvgIcon/svgFn";
 // https://vitejs.dev/config/
 const root = process.cwd();
 export default ({ command, mode }: ConfigEnv): UserConfig => {
@@ -39,6 +41,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
         // 存放的位置
         dts: "src/components.d.ts",
       }),
+      createSvg("./src/icons/svg/"),
     ],
     resolve: {
       // ↓路径别名

@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <el-form
-      ref="loginForm"
+      ref="loginFormRef"
       :model="loginForm"
       :rules="loginRules"
       class="login-form"
@@ -27,6 +27,7 @@
           type="text"
           tabindex="1"
           auto-complete="on"
+          class="login-input"
         />
       </el-form-item>
 
@@ -36,13 +37,14 @@
         </span>
         <el-input
           :key="passwordType"
-          ref="password"
+          ref="passwordRef"
           v-model="loginForm.password"
           :type="passwordType"
           placeholder="Password"
           name="password"
           tabindex="2"
           auto-complete="on"
+          class="login-input"
           @keyup.enter.native="handleLogin"
         />
         <span class="show-pwd" @click="showPwd">
@@ -73,26 +75,21 @@
 import { validMobile } from "@/utils/validate";
 import { useMain } from "@/store/user";
 import { storeToRefs } from "pinia";
-import { nextTick } from "vue";
+import type { FormInstance } from "element-plus";
+
 name: "Login";
 
 // 自定义校验函数
-const validateMobile = function (rule, value, callback) {
-  // 校验value
-  // if (validMobile(value)) {
-  //   // 如果通过 直接执行callback
-  //   callback()
-  // } else {
-  //   callback(new Error('手机号格式不正确'))
-  // }
+const validateMobile = function (rule: any, value: any, callback: any) {
   validMobile(value) ? callback() : callback(new Error("手机号格式不正确"));
 };
 
-const loginForm = reactive({
+const loginForm = reactive<any>({
   mobile: "13800000002",
   password: "123456",
 });
-const loginRules = {
+const loginFormRef = ref<FormInstance>();
+const loginRules = reactive({
   mobile: [
     { required: true, trigger: "blur", message: "手机号不能为空" },
     {
@@ -109,16 +106,23 @@ const loginRules = {
       trigger: "blur",
     },
   ],
-};
+});
 const loading = ref(false);
 const passwordType = ref("password");
-const redirect = undefined;
+let redirect = undefined;
 const main = useMain();
-const password = ref(null);
-onMounted(() => {});
-// watch($route,(route)=>{
-//       redirect = route.query && route.query.redirect
-//     },[immediate: true])
+const passwordRef = ref<any>();
+const router = useRouter();
+const route = useRoute();
+watch(
+  route,
+  (route) => {
+    redirect = route.query && route.query.redirect;
+  },
+  {
+    immediate: true, // 立即执行
+  }
+);
 
 const showPwd = () => {
   if (passwordType.value === "password") {
@@ -127,27 +131,27 @@ const showPwd = () => {
     passwordType.value = "password";
   }
   nextTick(() => {
-    console.log(password);
+    console.log(passwordRef);
 
-    // password.focus();
+    passwordRef.value?.focus();
   });
 };
 const handleLogin = () => {
-  console.log("11");
+  console.log();
 
-  // loginForm.validate(async (isOK) => {
-  //   if (isOK) {
-  //     try {
-  //       loading.value = true;
-  //       await main.Logins(loginForm);
-  //       $router.push("/");
-  //     } catch (error) {
-  //       console.log(error);
-  //     } finally {
-  //       loading.value = false;
-  //     }
-  //   }
-  // });
+  loginFormRef.value?.validate(async (isOK: any) => {
+    if (isOK) {
+      try {
+        loading.value = true;
+        await main.Logins(loginForm);
+        router.push("/");
+      } catch (error) {
+        console.log(error);
+      } finally {
+        loading.value = false;
+      }
+    }
+  });
 };
 </script>
 
@@ -167,7 +171,7 @@ $cursor: #fff;
 
 /* reset element-ui css */
 .login-container {
-  background-image: url("~@/assets/common/login.jpg"); // 设置背景图片
+  background-image: url("../../assets/common/login.jpg"); // 设置背景图片
   background-position: center; // 将图片位置设置为充满整个屏幕
   .el-input {
     display: inline-block;
@@ -227,6 +231,13 @@ $light_gray: #eee;
     padding: 160px 35px 0;
     margin: 0 auto;
     overflow: hidden;
+    .login-input {
+      ::v-deep .el-input__wrapper {
+        display: block;
+        padding: 0;
+        background-color: transparent;
+      }
+    }
   }
 
   .tips {
